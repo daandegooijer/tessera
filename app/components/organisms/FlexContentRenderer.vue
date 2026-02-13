@@ -9,11 +9,11 @@
 </template>
 
 <script setup lang="ts">
-import type { FlexContent } from '~/types/schemas'
+import type { FlexContent } from "~/types/schemas";
 
 defineProps<{
-  components: FlexContent[]
-}>()
+  components: FlexContent[];
+}>();
 </script>
 
 <style scoped>

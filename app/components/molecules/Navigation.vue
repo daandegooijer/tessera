@@ -1,82 +1,48 @@
 <template>
-  <nav class="navigation">
-    <ul class="menu">
-      <li v-for="item in items" :key="item.label" class="menu-item">
-        <NuxtLink :to="item.link.href" class="menu-link">
-          {{ item.label }}
-        </NuxtLink>
-        <ul v-if="item.subItems?.length" class="submenu">
-          <li v-for="subItem in item.subItems" :key="subItem.label">
-            <NuxtLink :to="subItem.link.href" class="submenu-link">
-              {{ subItem.label }}
-            </NuxtLink>
-          </li>
-        </ul>
+  <nav class="flex items-center gap-8">
+    <ul class="flex list-none gap-6 m-0 p-0">
+      <li v-for="item in items" :key="item.label">
+        <div v-if="item.subItems?.length">
+          <UDropdownMenu
+            :items="[
+              item.subItems.map((sub) => ({
+                label: sub.label,
+                icon: 'i-lucide-link',
+                to: sub.link.href,
+                target: sub.link.target,
+              })),
+            ]"
+            :ui="{ content: 'w-48' }"
+          >
+            <UButton
+              variant="ghost"
+              color="neutral"
+              class="text-slate-700 hover:text-primary-600 transition-colors"
+            >
+              <span>{{ item.label }}</span>
+              <UIcon name="i-lucide-chevron-down" class="w-4 h-4 ml-1" />
+            </UButton>
+          </UDropdownMenu>
+        </div>
+        <div v-else>
+          <UButton
+            variant="ghost"
+            :to="item.link.href"
+            color="neutral"
+            class="text-slate-700 hover:text-primary-600 transition-colors"
+          >
+            {{ item.label }}
+          </UButton>
+        </div>
       </li>
     </ul>
   </nav>
 </template>
 
 <script setup lang="ts">
-import type { MenuItem } from '~/types/common'
+import type { MenuItem } from "~/types/common";
 
 defineProps<{
-  items: MenuItem[]
-}>()
+  items: MenuItem[];
+}>();
 </script>
-
-<style scoped>
-.navigation {
-  padding: 0;
-}
-
-.menu {
-  list-style: none;
-  display: flex;
-  margin: 0;
-  padding: 0;
-  gap: 2rem;
-}
-
-.menu-item {
-  position: relative;
-}
-
-.menu-link {
-  text-decoration: none;
-  color: inherit;
-  padding: 0.5rem 1rem;
-}
-
-.menu-link:hover {
-  opacity: 0.7;
-}
-
-.submenu {
-  list-style: none;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  background: white;
-  padding: 0.5rem 0;
-  margin: 0.5rem 0 0 0;
-  min-width: 150px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  display: none;
-}
-
-.menu-item:hover .submenu {
-  display: block;
-}
-
-.submenu-link {
-  display: block;
-  padding: 0.5rem 1rem;
-  text-decoration: none;
-  color: inherit;
-}
-
-.submenu-link:hover {
-  background: #f5f5f5;
-}
-</style>

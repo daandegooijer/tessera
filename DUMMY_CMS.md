@@ -1,6 +1,8 @@
 # Dummy CMS - Mock Data for Building & Demos
 
-The **Dummy CMS** returns pre-built mock data without any external API calls. Perfect for:
+The **Dummy CMS** returns pre-built mock data without any external API calls.
+Perfect for:
+
 - Building the website layout/components
 - Creating demos and prototypes
 - Testing without external dependencies
@@ -48,6 +50,7 @@ bun run dev
 ```
 
 All pages render immediately with mock data. Perfect for:
+
 - Testing component rendering
 - Building page layouts
 - Demoing to stakeholders
@@ -61,23 +64,23 @@ Create a server plugin to add custom pages:
 
 ```typescript
 // app/server/plugins/addMockPages.ts
-import { getDummyCMSInstance } from '~/server/services/cms/dummy'
+import { getDummyCMSInstance } from "~/server/services/cms/dummy";
 
 export default defineNitroPlugin(() => {
-  const dummy = getDummyCMSInstance()
+  const dummy = getDummyCMSInstance();
 
   // Add custom page
-  dummy.addPage('en', 'services', {
-    title: 'Our Services',
+  dummy.addPage("en", "services", {
+    title: "Our Services",
     hero: {
-      title: 'Services',
-      subtitle: 'What we offer',
-      text: '<p>Our professional services include...</p>',
+      title: "Services",
+      subtitle: "What we offer",
+      text: "<p>Our professional services include...</p>",
       buttons: [],
     },
     flexContent: [],
-  })
-})
+  });
+});
 ```
 
 ### Option 2: Extend Mock Data
@@ -86,14 +89,18 @@ Edit `app/data/content.ts` and add more pages:
 
 ```typescript
 export const servicesPageData: Page = {
-  title: 'Services',
-  hero: { /* ... */ },
-  flexContent: [ /* ... */ ],
-}
+  title: "Services",
+  hero: {
+    /* ... */
+  },
+  flexContent: [
+    /* ... */
+  ],
+};
 
 export const blogPageData: Page = {
   // ... blog page content
-}
+};
 ```
 
 Then update Dummy CMS:
@@ -104,17 +111,20 @@ this.mockPages = {
   en: {
     home: homePageData,
     about: aboutPageData,
-    services: servicesPageData,  // Add new page
+    services: servicesPageData, // Add new page
     blog: blogPageData,
   },
-  nl: { /* same structure */ },
-}
+  nl: {
+    /* same structure */
+  },
+};
 ```
 
 ## How It Works
 
 1. **Zero API Calls** - Returns data instantly from memory
-2. **Simulated Delays** - Adds fake network latency (100ms) for realistic testing
+2. **Simulated Delays** - Adds fake network latency (100ms) for realistic
+   testing
 3. **Multi-Language** - Supports English & Dutch by default
 4. **Fallback Chain** - Returns `notFoundPageData` for unmapped routes
 
@@ -188,43 +198,43 @@ Add custom pages dynamically:
 ```typescript
 // app/server/plugins/customMockPages.ts
 export default defineNitroPlugin(() => {
-  const dummy = getDummyCMSInstance()
+  const dummy = getDummyCMSInstance();
 
   const customServices: Page = {
-    title: 'Services',
+    title: "Services",
     hero: {
-      title: 'Professional Services',
-      subtitle: 'Excellence in every project',
-      text: '<p>We deliver high-quality solutions...</p>',
+      title: "Professional Services",
+      subtitle: "Excellence in every project",
+      text: "<p>We deliver high-quality solutions...</p>",
       buttons: [
         {
-          label: 'Get Started',
-          link: { target: '_self', href: '/contact' },
+          label: "Get Started",
+          link: { target: "_self", href: "/contact" },
         },
       ],
     },
     flexContent: [
       {
         id: 1,
-        __component: 'content.text',
+        __component: "content.text",
         hasBackground: true,
         isColumnView: false,
         paragraph: {
-          text: '<p>Our service offerings...</p>',
+          text: "<p>Our service offerings...</p>",
           heading: {
             id: 1,
-            title: 'What We Do',
-            subtitle: 'Our expertise',
+            title: "What We Do",
+            subtitle: "Our expertise",
           },
           buttons: [],
         },
       },
     ],
-  }
+  };
 
-  dummy.addPage('en', 'services', customServices)
-  dummy.addPage('nl', 'services', customServices) // Or different Dutch version
-})
+  dummy.addPage("en", "services", customServices);
+  dummy.addPage("nl", "services", customServices); // Or different Dutch version
+});
 ```
 
 ## Benefits
@@ -234,7 +244,7 @@ export default defineNitroPlugin(() => {
 ✅ **Realistic** - Looks/feels like real CMS  
 ✅ **Easy to Demo** - Show stakeholders immediately  
 ✅ **Safe** - No external dependencies  
-✅ **Flexible** - Add pages anytime  
+✅ **Flexible** - Add pages anytime
 
 ## Testing
 
@@ -242,18 +252,19 @@ Perfect for testing the entire data pipeline:
 
 ```typescript
 // Test that pages render correctly
-visit('/en/')          // Home page
-visit('/en/about')     // About page
-visit('/nl/')          // Dutch home
-visit('/nl/about')     // Dutch about
-visit('/en/nonexist')  // Falls back to 404
+visit("/en/"); // Home page
+visit("/en/about"); // About page
+visit("/nl/"); // Dutch home
+visit("/nl/about"); // Dutch about
+visit("/en/nonexist"); // Falls back to 404
 ```
 
 All work instantly with dummy data.
 
 ## Security Note
 
-Dummy CMS is for development only. It doesn't validate/sanitize content like real CMS. For production, switch to a real CMS with proper security.
+Dummy CMS is for development only. It doesn't validate/sanitize content like
+real CMS. For production, switch to a real CMS with proper security.
 
 ## See Also
 

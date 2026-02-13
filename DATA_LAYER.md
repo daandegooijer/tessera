@@ -1,10 +1,12 @@
 # Data Layer Architecture
 
-This document explains how the Nuxt app's data layer works, how it's CMS-agnostic, and how to add support for new CMS platforms.
+This document explains how the Nuxt app's data layer works, how it's
+CMS-agnostic, and how to add support for new CMS platforms.
 
 ## Architecture Overview
 
-The data layer follows a **Adapter Pattern** to decouple the frontend from any specific CMS:
+The data layer follows a **Adapter Pattern** to decouple the frontend from any
+specific CMS:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -40,29 +42,36 @@ The data layer follows a **Adapter Pattern** to decouple the frontend from any s
 ## Key Components
 
 ### 1. **Base CMS Service** (`server/services/cms/base.ts`)
+
 Abstract interface all CMS adapters must implement:
+
 ```typescript
 interface ICMSService {
-  fetchPageBySlug(slug: string, locale: string): Promise<Page | null>
-  fetchHomePageData(locale: string): Promise<Page | null>
-  fetchGeneralData(locale: string): Promise<GeneralData | null>
+  fetchPageBySlug(slug: string, locale: string): Promise<Page | null>;
+  fetchHomePageData(locale: string): Promise<Page | null>;
+  fetchGeneralData(locale: string): Promise<GeneralData | null>;
 }
 ```
 
 ### 2. **CMS Adapters** (`server/services/cms/*.ts`)
+
 Transform CMS-specific data to frontend types:
+
 - **Strapi** (`strapi.ts`) - Transforms Strapi REST API responses
 - **Contentful** (`contentful.ts`) - Transforms Contentful API responses
 - Add your own: `myaws.ts`, `sanity.ts`, etc.
 
 ### 3. **CMS Factory** (`server/services/cms/factory.ts`)
+
 Instantiates the correct adapter based on `CMS_TYPE` env variable.
 
 ### 4. **API Routes** (`server/api/cms/`)
+
 - `/api/cms/page?slug=about&locale=en` - Fetch page by slug
 - `/api/cms/general?locale=en` - Fetch header/footer data
 
 ### 5. **Composables** (`composables/usePageData.ts`)
+
 SSR-safe hooks for components to fetch data with fallbacks.
 
 ## Usage
@@ -71,13 +80,13 @@ SSR-safe hooks for components to fetch data with fallbacks.
 
 ```vue
 <script setup lang="ts">
-const { locale } = useI18n()
-const { data: pageData } = await useFetch('/api/cms/page', {
-  query: { slug: 'about', locale: locale.value }
-})
+const { locale } = useI18n();
+const { data: pageData } = await useFetch("/api/cms/page", {
+  query: { slug: "about", locale: locale.value },
+});
 
 // Falls back to mock data if CMS fetch fails
-const finalPage = computed(() => pageData.value || mockData)
+const finalPage = computed(() => pageData.value || mockData);
 </script>
 
 <template>
@@ -111,19 +120,19 @@ CMS_API_TOKEN=your-token
 Create `app/server/services/cms/mycms.ts`:
 
 ```typescript
-import { BaseCMSService } from './base'
-import type { Page, GeneralData } from '~/types/schemas'
+import { BaseCMSService } from "./base";
+import type { Page, GeneralData } from "~/types/schemas";
 
 export class MyCMSService extends BaseCMSService {
   async fetchPageBySlug(slug: string, locale: string): Promise<Page | null> {
     // 1. Fetch from your CMS API
     const response = await this.safeFetch(
-      `${this.baseUrl}/pages/${slug}?locale=${locale}`
-    )
+      `${this.baseUrl}/pages/${slug}?locale=${locale}`,
+    );
 
     // 2. Transform CMS data to frontend types
-    if (!response) return null
-    return this.transformPage(response)
+    if (!response) return null;
+    return this.transformPage(response);
   }
 
   async fetchHomePageData(locale: string): Promise<Page | null> {
@@ -139,9 +148,11 @@ export class MyCMSService extends BaseCMSService {
     return {
       title: cmsPage.title,
       hero: this.transformHero(cmsPage.hero),
-      flexContent: cmsPage.content?.map(item => this.transformFlexContent(item)),
-      seo: cmsPage.seo
-    }
+      flexContent: cmsPage.content?.map((item) =>
+        this.transformFlexContent(item),
+      ),
+      seo: cmsPage.seo,
+    };
   }
 
   private transformHero(cmsHero: any) {
@@ -157,14 +168,14 @@ export class MyCMSService extends BaseCMSService {
 Update `app/server/services/cms/factory.ts`:
 
 ```typescript
-import { MyCMSService } from './mycms'
+import { MyCMSService } from "./mycms";
 
 class CMSServiceFactory {
   private initializeCMS() {
     switch (this.config.type) {
-      case 'mycms':
-        this.cmsService = new MyCMSService(this.config.baseUrl!)
-        break
+      case "mycms":
+        this.cmsService = new MyCMSService(this.config.baseUrl!);
+        break;
       // ... other cases
     }
   }
@@ -184,13 +195,15 @@ CMS_API_TOKEN=your-api-token
 
 ### Step 4: Done!
 
-Your components don't change. The factory automatically uses your new adapter based on `CMS_TYPE`.
+Your components don't change. The factory automatically uses your new adapter
+based on `CMS_TYPE`.
 
 ## Data Transformation Strategy
 
 Each adapter transforms CMS data to match these frontend types:
 
 ### Page Structure
+
 ```typescript
 {
   title: string
@@ -201,12 +214,14 @@ Each adapter transforms CMS data to match these frontend types:
 ```
 
 ### Flex Content Types
+
 - `content.text` - Text with heading
 - `content.image-text` - Text + image layout
 - `content.accordion` - Collapsible sections
 - Extend with more as needed
 
 ### General Data (Header/Footer)
+
 ```typescript
 {
   header: {
@@ -251,7 +266,9 @@ The CMS doesn't need to know about the frontend architecture.
 ## Best Practices
 
 ### 1. **Transform at Adapter Level**
+
 Don't let CMS-specific data reach components. Transform in adapter:
+
 ```typescript
 // ✅ DO: Transform in adapter
 private transformImage(cmsImage: any) {
@@ -267,7 +284,9 @@ private transformImage(cmsImage: any) {
 ```
 
 ### 2. **Type Safety**
+
 Use TypeScript to ensure transformers output correct types:
+
 ```typescript
 private transformPage(data: any): Page {
   // TypeScript validates this matches frontend Page type
@@ -276,7 +295,9 @@ private transformPage(data: any): Page {
 ```
 
 ### 3. **Consistent Field Names**
+
 Map all CMS field variations to standard names:
+
 ```typescript
 // Different CMS might call this:
 // - "metaDescription" (Strapi)
@@ -287,6 +308,7 @@ Map all CMS field variations to standard names:
 ```
 
 ### 4. **Handle Missing Data Gracefully**
+
 ```typescript
 private transformHero(hero: any): Hero {
   return {
@@ -314,13 +336,15 @@ CMS_TYPE=none npm run dev
 ## Debugging
 
 Check which CMS is active:
+
 ```typescript
 // In any server route
-const cmsService = getCMSService()
-console.log(cmsService.getCMSService()) // Logs adapter instance
+const cmsService = getCMSService();
+console.log(cmsService.getCMSService()); // Logs adapter instance
 ```
 
 Monitor cache hits:
+
 ```bash
 # Pages will log when falling back to mock data
 # Check server logs for: "[CMS] No data found for slug: ..."
@@ -355,6 +379,7 @@ npm run dev
 ```
 
 The adapter will:
+
 1. Fetch from Strapi API
 2. Transform responses to frontend types
 3. Cache results per SWR config

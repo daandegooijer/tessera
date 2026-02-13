@@ -12,20 +12,20 @@
 </template>
 
 <script setup lang="ts">
-import type { FlexContent } from '~/types/schemas'
-import TextContent from './TextContent.vue'
-import ImageTextContent from './ImageTextContent.vue'
-import AccordionContent from './AccordionContent.vue'
+import type { FlexContent } from "~/types/schemas";
+import TextContent from "./TextContent.vue";
+import ImageTextContent from "./ImageTextContent.vue";
+import AccordionContent from "./AccordionContent.vue";
 
 const componentMap = {
-  'content.text': TextContent,
-  'content.image-text': ImageTextContent,
-  'content.accordion': AccordionContent,
-} as Record<string, any>
+  "content.text": TextContent,
+  "content.image-text": ImageTextContent,
+  "content.accordion": AccordionContent,
+} as Record<string, any>;
 
 defineProps<{
-  content: FlexContent
-}>()
+  content: FlexContent;
+}>();
 </script>
 
 <style scoped>

@@ -1,7 +1,7 @@
 <template>
-  <div class="app-layout">
+  <div class="flex flex-col min-h-screen">
     <Header :items="headerData.items" :topbar="headerData.topbar" />
-    <main class="main-content" id="main-content">
+    <main class="flex-1" id="main-content">
       <slot />
     </main>
     <Footer
@@ -14,17 +14,5 @@
 </template>
 
 <script setup lang="ts">
-import { headerData, footerData } from '~/data/content'
+import { headerData, footerData } from "~/data/content";
 </script>
-
-<style scoped>
-.app-layout {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-.main-content {
-  flex: 1;
-}
-</style>

@@ -3,73 +3,77 @@
  * Shows how to add support for any CMS
  */
 
-import { BaseCMSService } from './base'
-import type { Page, GeneralData } from '~/types/schemas'
+import { BaseCMSService } from "./base";
+import type { Page, GeneralData } from "~/types/schemas";
 
 interface SanityPage {
-  _id: string
-  _type: 'page'
-  title: string
-  slug: { current: string }
-  hero?: any
-  content?: any[]
-  seo?: any
+  _id: string;
+  _type: "page";
+  title: string;
+  slug: { current: string };
+  hero?: any;
+  content?: any[];
+  seo?: any;
 }
 
 interface SanityResponse<T> {
-  result: T[]
+  result: T[];
 }
 
 export class SanityCMSService extends BaseCMSService {
-  private projectId: string
-  private dataset: string
+  private projectId: string;
+  private dataset: string;
 
-  constructor(baseUrl: string, projectId: string, dataset: string = 'production') {
-    super(baseUrl)
-    this.projectId = projectId
-    this.dataset = dataset
+  constructor(
+    baseUrl: string,
+    projectId: string,
+    dataset: string = "production",
+  ) {
+    super(baseUrl);
+    this.projectId = projectId;
+    this.dataset = dataset;
   }
 
   async fetchPageBySlug(slug: string, locale: string): Promise<Page | null> {
     const query = encodeURIComponent(
-      `*[_type == "page" && slug.current == "${slug}" && language == "${locale}"] | order(_updatedAt desc)[0]`
-    )
+      `*[_type == "page" && slug.current == "${slug}" && language == "${locale}"] | order(_updatedAt desc)[0]`,
+    );
 
-    const url = `${this.baseUrl}/v2023-05-03/data/query/${this.dataset}?query=${query}`
+    const url = `${this.baseUrl}/v2023-05-03/data/query/${this.dataset}?query=${query}`;
 
-    const response = await this.safeFetch<SanityResponse<SanityPage>>(url)
+    const response = await this.safeFetch<SanityResponse<SanityPage>>(url);
 
-    if (!response?.result || response.result.length === 0) return null
+    if (!response?.result || response.result.length === 0) return null;
 
-    return this.transformPage(response.result[0])
+    return this.transformPage(response.result[0]);
   }
 
   async fetchHomePageData(locale: string): Promise<Page | null> {
     const query = encodeURIComponent(
-      `*[_type == "page" && isHomepage == true && language == "${locale}"][0]`
-    )
+      `*[_type == "page" && isHomepage == true && language == "${locale}"][0]`,
+    );
 
-    const url = `${this.baseUrl}/v2023-05-03/data/query/${this.dataset}?query=${query}`
+    const url = `${this.baseUrl}/v2023-05-03/data/query/${this.dataset}?query=${query}`;
 
-    const response = await this.safeFetch<SanityResponse<SanityPage>>(url)
+    const response = await this.safeFetch<SanityResponse<SanityPage>>(url);
 
-    if (!response?.result || response.result.length === 0) return null
+    if (!response?.result || response.result.length === 0) return null;
 
-    return this.transformPage(response.result[0])
+    return this.transformPage(response.result[0]);
   }
 
   async fetchGeneralData(locale: string): Promise<GeneralData | null> {
     const query = encodeURIComponent(
-      `*[_type == "siteSettings" && language == "${locale}"][0]`
-    )
+      `*[_type == "siteSettings" && language == "${locale}"][0]`,
+    );
 
-    const url = `${this.baseUrl}/v2023-05-03/data/query/${this.dataset}?query=${query}`
+    const url = `${this.baseUrl}/v2023-05-03/data/query/${this.dataset}?query=${query}`;
 
-    const response = await this.safeFetch<any>(url)
+    const response = await this.safeFetch<any>(url);
 
-    if (!response?.result) return null
+    if (!response?.result) return null;
 
-    return this.transformGeneralData(response.result[0])
+    return this.transformGeneralData(response.result[0]);
   }
 
   private transformPage(sanityPage: SanityPage): Page {
@@ -79,7 +83,7 @@ export class SanityCMSService extends BaseCMSService {
         ? this.transformHero(sanityPage.hero)
         : {
             title: sanityPage.title,
-            text: '',
+            text: "",
           },
       flexContent: sanityPage.content
         ? sanityPage.content
@@ -87,112 +91,121 @@ export class SanityCMSService extends BaseCMSService {
             .filter(Boolean)
         : undefined,
       seo: sanityPage.seo,
-    }
+    };
   }
 
   private transformHero(sanityHero: any) {
     return {
       title: sanityHero.title,
       subtitle: sanityHero.subtitle,
-      text: sanityHero.description || '',
-      image: sanityHero.image ? this.transformImage(sanityHero.image) : undefined,
+      text: sanityHero.description || "",
+      image: sanityHero.image
+        ? this.transformImage(sanityHero.image)
+        : undefined,
       buttons: sanityHero.cta?.map((cta: any) => ({
         label: cta.label,
         link: {
           href: cta.url,
-          target: cta.openInNewTab ? '_blank' : '_self',
+          target: cta.openInNewTab ? "_blank" : "_self",
         },
       })),
-    }
+    };
   }
 
   private transformFlexContent(item: any) {
     switch (item._type) {
-      case 'textBlock':
+      case "textBlock":
         return {
           id: item._id,
-          __component: 'content.text',
-          hasBackground: item.backgroundColor !== 'white',
+          __component: "content.text",
+          hasBackground: item.backgroundColor !== "white",
           isColumnView: item.columns === 2,
           paragraph: {
             text: item.text,
             heading: {
               id: item._id,
-              title: item.title || '',
-              subtitle: item.subtitle || '',
+              title: item.title || "",
+              subtitle: item.subtitle || "",
             },
-            buttons: item.cta?.map((cta: any) => ({
-              label: cta.label,
-              link: {
-                href: cta.url,
-                target: cta.openInNewTab ? '_blank' : '_self',
-              },
-            })) || [],
+            buttons:
+              item.cta?.map((cta: any) => ({
+                label: cta.label,
+                link: {
+                  href: cta.url,
+                  target: cta.openInNewTab ? "_blank" : "_self",
+                },
+              })) || [],
           },
-        }
+        };
 
-      case 'imageTextBlock':
+      case "imageTextBlock":
         return {
           id: item._id,
-          __component: 'content.image-text',
-          textLeft: item.imagePosition !== 'left',
+          __component: "content.image-text",
+          textLeft: item.imagePosition !== "left",
           image: item.image ? this.transformImage(item.image) : undefined,
           paragraph: {
             text: item.text,
             heading: {
               id: item._id,
-              title: item.title || '',
-              subtitle: item.subtitle || '',
+              title: item.title || "",
+              subtitle: item.subtitle || "",
             },
-            buttons: item.cta?.map((cta: any) => ({
-              label: cta.label,
-              link: {
-                href: cta.url,
-                target: cta.openInNewTab ? '_blank' : '_self',
-              },
-            })) || [],
+            buttons:
+              item.cta?.map((cta: any) => ({
+                label: cta.label,
+                link: {
+                  href: cta.url,
+                  target: cta.openInNewTab ? "_blank" : "_self",
+                },
+              })) || [],
           },
-        }
+        };
 
-      case 'accordionBlock':
+      case "accordionBlock":
         return {
           id: item._id,
-          __component: 'content.accordion',
+          __component: "content.accordion",
           heading: {
             id: item._id,
-            title: item.title || '',
-            subtitle: item.subtitle || '',
+            title: item.title || "",
+            subtitle: item.subtitle || "",
           },
-          items: item.items?.map((accordionItem: any) => ({
-            title: accordionItem.title,
-            text: accordionItem.content,
-          })) || [],
-        }
+          items:
+            item.items?.map((accordionItem: any) => ({
+              title: accordionItem.title,
+              text: accordionItem.content,
+            })) || [],
+        };
 
       default:
-        console.warn(`[Sanity] Unknown content type: ${item._type}`)
-        return null
+        console.warn(`[Sanity] Unknown content type: ${item._type}`);
+        return null;
     }
   }
 
   private transformImage(sanityImage: any) {
     const imageUrl = sanityImage.asset?._id
-      ? this.constructImageUrl(sanityImage.asset._id, sanityImage.crop, sanityImage.hotspot)
-      : sanityImage.url
+      ? this.constructImageUrl(
+          sanityImage.asset._id,
+          sanityImage.crop,
+          sanityImage.hotspot,
+        )
+      : sanityImage.url;
 
     return {
-      name: sanityImage.alt || 'Image',
+      name: sanityImage.alt || "Image",
       alternativeText: sanityImage.alt,
-      caption: sanityImage.caption || '',
+      caption: sanityImage.caption || "",
       width: 1200,
       height: 800,
       formats: {
         thumbnail: {
           url: `${imageUrl}?w=150&h=100&fit=crop`,
-          ext: 'jpg',
-          hash: sanityImage.asset?._id || '',
-          mime: 'image/jpeg',
-          name: sanityImage.alt || 'thumb',
+          ext: "jpg",
+          hash: sanityImage.asset?._id || "",
+          mime: "image/jpeg",
+          name: sanityImage.alt || "thumb",
           path: null,
           size: 0,
           width: 150,
@@ -200,95 +213,101 @@ export class SanityCMSService extends BaseCMSService {
           sizeInBytes: 0,
         },
       },
-      hash: sanityImage.asset?._id || '',
-      ext: 'jpg',
-      mime: 'image/jpeg',
+      hash: sanityImage.asset?._id || "",
+      ext: "jpg",
+      mime: "image/jpeg",
       size: 0,
       url: imageUrl,
       previewUrl: null,
-      provider: 'sanity',
+      provider: "sanity",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      placeholder: '',
-    }
+      placeholder: "",
+    };
   }
 
   private constructImageUrl(
     assetId: string,
     crop?: any,
-    hotspot?: any
+    hotspot?: any,
   ): string {
     // Extract project ID and image ID from asset
-    const parts = assetId.split('-')
-    const imageId = parts.pop()
+    const parts = assetId.split("-");
+    const imageId = parts.pop();
 
-    return `https://cdn.sanity.io/images/${this.projectId}/${this.dataset}/${imageId}`
+    return `https://cdn.sanity.io/images/${this.projectId}/${this.dataset}/${imageId}`;
   }
 
   private transformGeneralData(sanityData: any): GeneralData {
     return {
       header: {
-        items: sanityData.navigation?.map((item: any) => ({
-          label: item.label,
-          link: {
-            href: item.url,
-            target: item.openInNewTab ? '_blank' : '_self',
-          },
-          subItems: item.subItems?.map((sub: any) => ({
-            label: sub.label,
+        items:
+          sanityData.navigation?.map((item: any) => ({
+            label: item.label,
             link: {
-              href: sub.url,
-              target: sub.openInNewTab ? '_blank' : '_self',
+              href: item.url,
+              target: item.openInNewTab ? "_blank" : "_self",
             },
-          })),
-        })) || [],
+            subItems: item.subItems?.map((sub: any) => ({
+              label: sub.label,
+              link: {
+                href: sub.url,
+                target: sub.openInNewTab ? "_blank" : "_self",
+              },
+            })),
+          })) || [],
         topbar: [],
       },
       footer: {
-        items: sanityData.footerColumns?.map((col: any) => ({
-          title: col.title,
-          items: col.links?.map((link: any) => ({
+        items:
+          sanityData.footerColumns?.map((col: any) => ({
+            title: col.title,
+            items:
+              col.links?.map((link: any) => ({
+                label: link.label,
+                link: {
+                  href: link.url,
+                  target: link.openInNewTab ? "_blank" : "_self",
+                },
+              })) || [],
+          })) || [],
+        bottombar:
+          sanityData.footerLinks?.map((link: any) => ({
             label: link.label,
             link: {
               href: link.url,
-              target: link.openInNewTab ? '_blank' : '_self',
+              target: link.openInNewTab ? "_blank" : "_self",
             },
           })) || [],
-        })) || [],
-        bottombar: sanityData.footerLinks?.map((link: any) => ({
-          label: link.label,
-          link: {
-            href: link.url,
-            target: link.openInNewTab ? '_blank' : '_self',
-          },
-        })) || [],
-        socials: sanityData.socials?.map((social: any) => ({
-          channel: social.platform,
-          url: social.url,
-        })) || [],
-        addresses: sanityData.addresses?.map((addr: any) => ({
-          title: addr.title,
-          street: addr.street,
-          houseNumber: addr.houseNumber,
-          postalCode: addr.postalCode,
-          city: addr.city,
-          email: addr.email,
-          phone: addr.phone
-            ? {
-                label: addr.phone,
-                href: `tel:${addr.phone.replace(/\s/g, '')}`,
-              }
-            : undefined,
-        })) || [],
+        socials:
+          sanityData.socials?.map((social: any) => ({
+            channel: social.platform,
+            url: social.url,
+          })) || [],
+        addresses:
+          sanityData.addresses?.map((addr: any) => ({
+            title: addr.title,
+            street: addr.street,
+            houseNumber: addr.houseNumber,
+            postalCode: addr.postalCode,
+            city: addr.city,
+            email: addr.email,
+            phone: addr.phone
+              ? {
+                  label: addr.phone,
+                  href: `tel:${addr.phone.replace(/\s/g, "")}`,
+                }
+              : undefined,
+          })) || [],
       },
       seo: sanityData.seo,
-    }
+    };
   }
 }
 
 /**
  * Usage in factory:
- * 
+ *
  * case 'sanity':
  *   if (!baseUrl || !process.env.SANITY_PROJECT_ID) {
  *     throw new Error('Sanity requires baseUrl and SANITY_PROJECT_ID')
@@ -299,7 +318,7 @@ export class SanityCMSService extends BaseCMSService {
  *     process.env.SANITY_DATASET || 'production'
  *   )
  *   break
- * 
+ *
  * Env vars:
  * CMS_TYPE=sanity
  * CMS_URL=https://api.sanity.io

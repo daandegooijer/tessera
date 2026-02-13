@@ -1,16 +1,19 @@
 # CMS-Agnostic Data Layer Implementation
 
-Your Nuxt app now has a **completely decoupled data layer** that works with any CMS. Components have zero knowledge of where data comes from.
+Your Nuxt app now has a **completely decoupled data layer** that works with any
+CMS. Components have zero knowledge of where data comes from.
 
 ## 📦 What You Have
 
 ### **CMS Adapters** (Transform CMS data → Frontend types)
+
 - ✅ **Strapi** - `server/services/cms/strapi.ts`
 - ✅ **Contentful** - `server/services/cms/contentful.ts`
 - 📄 **Sanity** - `server/services/cms/sanity.example.ts` (reference)
 - ➕ **Add any CMS** - Follow adapter pattern
 
 ### **Data Layer Files**
+
 ```
 app/
 ├── server/services/cms/
@@ -26,11 +29,12 @@ app/
 ```
 
 ### **Component Usage** (No CMS knowledge needed)
+
 ```vue
 <script setup>
-const { data: page } = await useFetch('/api/cms/page', {
-  query: { slug: 'about', locale: 'en' }
-})
+const { data: page } = await useFetch("/api/cms/page", {
+  query: { slug: "about", locale: "en" },
+});
 </script>
 
 <template>
@@ -42,6 +46,7 @@ const { data: page } = await useFetch('/api/cms/page', {
 ## 🔧 Configuration
 
 ### Start with No CMS (Mock Data)
+
 ```bash
 # .env
 CMS_TYPE=mock
@@ -51,6 +56,7 @@ npm run dev
 Components use fallback mock data. Perfect for development.
 
 ### Switch to Strapi
+
 ```bash
 # .env
 CMS_TYPE=strapi
@@ -62,6 +68,7 @@ npm run dev
 The adapter transforms Strapi responses automatically.
 
 ### Switch to Contentful
+
 ```bash
 # .env
 CMS_TYPE=contentful
@@ -76,6 +83,7 @@ Same components, different CMS. **No frontend changes needed.**
 ## 🎯 How It Works
 
 ### Data Flow
+
 ```
 1. Component fetches: GET /api/cms/page?slug=about&locale=en
 2. API route gets request
@@ -87,6 +95,7 @@ Same components, different CMS. **No frontend changes needed.**
 ```
 
 ### Fallback Strategy
+
 - ✅ Try CMS API → Success: use CMS data
 - ❌ CMS offline → Use mock data
 - Frontend still works even if CMS is down
@@ -94,31 +103,35 @@ Same components, different CMS. **No frontend changes needed.**
 ## 📝 Adding a New CMS (Example: AWS Amplify)
 
 ### 1. Create Adapter (`server/services/cms/amplify.ts`)
+
 ```typescript
-import { BaseCMSService } from './base'
+import { BaseCMSService } from "./base";
 
 export class AmplifiyCMSService extends BaseCMSService {
   async fetchPageBySlug(slug: string, locale: string): Promise<Page | null> {
     // 1. Fetch from Amplify API
     const response = await this.safeFetch(
-      `${this.baseUrl}/pages/${slug}?locale=${locale}`
-    )
-    
+      `${this.baseUrl}/pages/${slug}?locale=${locale}`,
+    );
+
     // 2. Transform to frontend types
-    if (!response) return null
-    return this.transformPage(response)
+    if (!response) return null;
+    return this.transformPage(response);
   }
-  
+
   // ... implement other methods
-  
+
   private transformPage(data: any): Page {
     // Map Amplify fields to frontend Page type
-    return { /* ... */ }
+    return {
+      /* ... */
+    };
   }
 }
 ```
 
 ### 2. Register in Factory (`server/services/cms/factory.ts`)
+
 ```typescript
 import { AmplifiyCMSService } from './amplify'
 
@@ -128,6 +141,7 @@ case 'amplify':
 ```
 
 ### 3. Add Environment Variables
+
 ```bash
 CMS_TYPE=amplify
 CMS_URL=https://api.amplify.example.com
@@ -135,7 +149,9 @@ CMS_API_TOKEN=your-token
 ```
 
 ### 4. Done! ✅
-Components still don't change. They fetch `/api/cms/page` which now uses AmplifyService.
+
+Components still don't change. They fetch `/api/cms/page` which now uses
+AmplifyService.
 
 ## 🌍 Multi-CMS Support (Optional)
 
@@ -144,14 +160,15 @@ You can even support **multiple CMS per locale**:
 ```typescript
 // Use Strapi for English, Contentful for Dutch
 const getService = (locale: string) => {
-  if (locale === 'en') return strapiService
-  if (locale === 'nl') return contentfulService
-}
+  if (locale === "en") return strapiService;
+  if (locale === "nl") return contentfulService;
+};
 ```
 
 ## 🔄 Webhook/Revalidation (CMS-Agnostic)
 
 **Any CMS** can trigger cache purge:
+
 ```bash
 curl -X POST https://your-site.com/api/revalidate \
   -H "Content-Type: application/json" \
@@ -165,15 +182,15 @@ This works the same regardless of which CMS is active.
 
 ## 📄 Files & Docs
 
-| File | Purpose |
-|------|---------|
-| **DATA_LAYER.md** | Complete architecture guide |
-| **server/services/cms/base.ts** | Interface all adapters implement |
-| **server/services/cms/strapi.ts** | Strapi transformation logic |
-| **server/services/cms/contentful.ts** | Contentful transformation logic |
-| **server/services/cms/sanity.example.ts** | Sanity reference implementation |
-| **server/services/cms/factory.ts** | CMS selection & instantiation |
-| **.env.example** | Configuration template |
+| File                                      | Purpose                          |
+| ----------------------------------------- | -------------------------------- |
+| **DATA_LAYER.md**                         | Complete architecture guide      |
+| **server/services/cms/base.ts**           | Interface all adapters implement |
+| **server/services/cms/strapi.ts**         | Strapi transformation logic      |
+| **server/services/cms/contentful.ts**     | Contentful transformation logic  |
+| **server/services/cms/sanity.example.ts** | Sanity reference implementation  |
+| **server/services/cms/factory.ts**        | CMS selection & instantiation    |
+| **.env.example**                          | Configuration template           |
 
 ## ✨ Key Benefits
 
@@ -183,7 +200,7 @@ This works the same regardless of which CMS is active.
 ✅ **Extensible** - Add any CMS in ~30 minutes  
 ✅ **Type Safe** - TypeScript ensures correct transformations  
 ✅ **Testable** - Mock CMS for unit tests  
-✅ **Future Proof** - Replace CMS anytime without touching components  
+✅ **Future Proof** - Replace CMS anytime without touching components
 
 ## 🚀 Next Steps
 
@@ -199,6 +216,7 @@ This works the same regardless of which CMS is active.
 ## Questions?
 
 Check **DATA_LAYER.md** for:
+
 - Architecture deep-dive
 - Step-by-step CMS adapter creation
 - Transformation patterns

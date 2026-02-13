@@ -1,6 +1,7 @@
 # Static Generation & Revalidation Setup
 
-This guide explains how to configure static site generation with on-demand revalidation for CMS content updates.
+This guide explains how to configure static site generation with on-demand
+revalidation for CMS content updates.
 
 ## How It Works
 
@@ -8,7 +9,8 @@ This guide explains how to configure static site generation with on-demand reval
 2. **Caching**: Pages are cached with **SWR (Stale-While-Revalidate)**
    - Home page: Cached for 7 days (604800 seconds)
    - Other pages: Cached for 1 day (86400 seconds)
-3. **Revalidation**: When CMS content changes, Strapi calls the `/api/revalidate` webhook
+3. **Revalidation**: When CMS content changes, Strapi calls the
+   `/api/revalidate` webhook
 4. **Cache Purge**: The revalidation endpoint clears stale cache
 5. **Regeneration**: Next user request triggers regeneration of that page
 
@@ -28,6 +30,7 @@ REDIS_URL=redis://localhost:6379
 ## Deployment Output
 
 Build static files with:
+
 ```bash
 # Generate pre-rendered static HTML files
 bun run generate
@@ -55,13 +58,11 @@ bun run generate
      ```
 
 4. In the **Advanced settings** section, add request body:
+
 ```json
 {
   "type": "pages",
-  "paths": [
-    "/en/{{ $body.data.slug }}",
-    "/nl/{{ $body.data.slug }}"
-  ],
+  "paths": ["/en/{{ $body.data.slug }}", "/nl/{{ $body.data.slug }}"],
   "secret": "your-super-secret-key-here"
 }
 ```
@@ -69,6 +70,7 @@ bun run generate
 ### 2. Example Webhook Calls
 
 **Trigger revalidation for specific pages:**
+
 ```bash
 curl -X POST https://your-site.com/api/revalidate \
   -H "Content-Type: application/json" \
@@ -79,6 +81,7 @@ curl -X POST https://your-site.com/api/revalidate \
 ```
 
 **Revalidate everything:**
+
 ```bash
 curl -X POST https://your-site.com/api/revalidate \
   -H "Content-Type: application/json" \
@@ -98,7 +101,7 @@ From your Strapi service or webhook:
 // Example: After publishing a page in CMS
 async function publishPage(pageData: any) {
   // Save to database
-  await savePage(pageData)
+  await savePage(pageData);
 
   // Trigger revalidation
   const paths = [
@@ -106,28 +109,30 @@ async function publishPage(pageData: any) {
     `/nl/${pageData.slug}`,
     `/en/`, // Also revalidate home page
     `/nl/`,
-  ]
+  ];
 
-  await triggerRevalidation(paths, process.env.CMS_WEBHOOK_SECRET)
+  await triggerRevalidation(paths, process.env.CMS_WEBHOOK_SECRET);
 }
 ```
 
 ## Cache Strategy
 
-| Route | Cache | Revalidate |
-|-------|-------|------------|
-| `/en/`, `/nl/` | 7 days | On publish/update |
-| `/en/**`, `/nl/**` | 1 day | On publish/update |
-| `/api/**` | None | Real-time |
+| Route              | Cache  | Revalidate        |
+| ------------------ | ------ | ----------------- |
+| `/en/`, `/nl/`     | 7 days | On publish/update |
+| `/en/**`, `/nl/**` | 1 day  | On publish/update |
+| `/api/**`          | None   | Real-time         |
 
 ## Testing Locally
 
 1. Start the dev server:
+
 ```bash
 bun run dev
 ```
 
 2. Test the revalidation endpoint:
+
 ```bash
 curl -X POST http://localhost:3000/api/revalidate \
   -H "Content-Type: application/json" \
@@ -138,6 +143,7 @@ curl -X POST http://localhost:3000/api/revalidate \
 ```
 
 Expected response:
+
 ```json
 {
   "success": true,
@@ -163,23 +169,27 @@ bun run generate
 ## Hosting Options
 
 ### Static Hosts (Recommended)
+
 - **Vercel**: Automatic deployment from GitHub, built-in cache
 - **Netlify**: Webhook-triggered rebuilds
 - **CloudFlare Pages**: Global CDN with caching
 - **AWS S3 + CloudFront**: Cost-effective at scale
 
 ### Node Servers (With Cache)
+
 - **Render**, **Railway**, **Fly.io**: Full Node.js support
 - Requires Redis or similar for distributed caching
 
 ## Security Notes
 
 ⚠️ **Always use `CMS_WEBHOOK_SECRET`** in production to:
+
 1. Verify webhook calls come from your CMS
 2. Prevent cache poisoning attacks
 3. Ensure only authorized revalidations occur
 
 Secrets should be:
+
 - Random and long (32+ characters)
 - Different per environment
 - Never committed to git
@@ -188,16 +198,19 @@ Secrets should be:
 ## Troubleshooting
 
 **Issue**: Cache not being purged
+
 - Check `CMS_WEBHOOK_SECRET` matches between config and webhook
 - Verify Redis connection if using distributed cache
 - Check server logs: `console.log('[Revalidate]...')` messages
 
 **Issue**: Old content still visible
+
 - Edge caches (CloudFlare, CDN) may need purging separately
 - Set shorter SWR values for testing
 - Clear browser cache (Ctrl+Shift+Delete)
 
 **Issue**: Webhook delivery fails
+
 - Verify URL is publicly accessible
 - Check firewall/CORS settings
 - Use webhook logs in Strapi to debug

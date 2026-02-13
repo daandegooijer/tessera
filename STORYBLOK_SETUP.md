@@ -118,11 +118,11 @@ Settings
 
 The adapter maps Storyblok blocks to frontend components:
 
-| Storyblok Component | Frontend Component | Fields Used |
-|-------------------|------------------|-------------|
-| `text` / `textBlock` | `content.text` | title, subtitle, text, backgroundColor, columns, cta |
-| `imageText` / `image_text` | `content.image-text` | title, subtitle, text, image, imagePosition, cta |
-| `accordion` / `accordionBlock` | `content.accordion` | title, subtitle, items (with title, text) |
+| Storyblok Component            | Frontend Component   | Fields Used                                          |
+| ------------------------------ | -------------------- | ---------------------------------------------------- |
+| `text` / `textBlock`           | `content.text`       | title, subtitle, text, backgroundColor, columns, cta |
+| `imageText` / `image_text`     | `content.image-text` | title, subtitle, text, image, imagePosition, cta     |
+| `accordion` / `accordionBlock` | `content.accordion`  | title, subtitle, items (with title, text)            |
 
 ## Content Type Examples
 
@@ -199,6 +199,7 @@ Storyblok supports multi-language stories. The adapter handles locale routing:
    - User visits `/nl/about` → Fetches Dutch story
 
 Configure in Nuxt config (already set up):
+
 ```typescript
 i18n: {
   locales: [
@@ -227,10 +228,7 @@ i18n: {
 4. **Body** - Set request body to JSON:
    ```json
    {
-     "paths": [
-       "/en/{{ story.full_slug }}",
-       "/nl/{{ story.full_slug }}"
-     ],
+     "paths": ["/en/{{ story.full_slug }}", "/nl/{{ story.full_slug }}"],
      "secret": "{{ env.WEBHOOK_SECRET }}"
    }
    ```
@@ -276,6 +274,7 @@ https://a.storyblok.com/f/{space-id}/{uuid}/{filename}
 ```
 
 The adapter automatically:
+
 - Converts Storyblok image objects to standard format
 - Handles image resizing with query parameters
 - Creates thumbnails with `?w=150&h=100&fit=crop`
@@ -283,7 +282,8 @@ The adapter automatically:
 
 ### Image Formats
 
-Storyblok returns images in the `filename` field. In your Storyblok field settings:
+Storyblok returns images in the `filename` field. In your Storyblok field
+settings:
 
 ```
 Asset Field
@@ -337,6 +337,7 @@ CMS_API_TOKEN=your-preview-token  # Not public token!
 Base URL: `https://api.storyblok.com/v2`
 
 **Fetch Story**
+
 ```
 GET /stories/{locale}/{slug}
   ?token={token}
@@ -344,6 +345,7 @@ GET /stories/{locale}/{slug}
 ```
 
 **Fetch All Stories**
+
 ```
 GET /stories
   ?token={token}
@@ -352,6 +354,7 @@ GET /stories
 ```
 
 **Query Parameters**
+
 - `token`: Access token
 - `version`: `draft` or `published`
 - `resolve_relations`: Load linked content
@@ -386,6 +389,7 @@ GET /stories
 ### Caching Strategy
 
 The app uses **Stale-While-Revalidate** (SWR):
+
 - Home page: 7 days cache
 - Other pages: 1 day cache
 - Webhook purges cache on publish
